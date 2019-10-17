@@ -189,7 +189,6 @@ function ticTacToeProblem(field) {
     }
     fieldT.push(line);
   }
-  console.log(fieldT);
   const isWin = function(c) {
     let acceptDiag = true;
     let acceptDiagT = true;
