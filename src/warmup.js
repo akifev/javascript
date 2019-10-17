@@ -116,9 +116,9 @@ function matrixProblem(matrix) {
   }
   if (checkMatrix) {
     const matrixT = [];
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < m; i++) {
       const line = [];
-      for (let j = 0; j < m; j++) {
+      for (let j = 0; j < n; j++) {
         line.push(matrix[j][i]);
       }
       matrixT.push(line);
