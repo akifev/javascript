@@ -193,28 +193,21 @@ function ticTacToeProblem(field) {
     for (let i = 0; i < FIELD_SIZE; i++) {
       if (field[i][i] !== c) acceptDiag = false;
       if (fieldT[i][i] !== c) acceptDiagT = false;
-      let accept = true;
-      let acceptT = true;
+      let acceptLine = true;
+      let acceptLineT = true;
       for (let j = 0; j < FIELD_SIZE; j++) {
-        if (!accept && !acceptT) {
-          break;
-        }
-        if (field[i][j] !== c) {
-          accept = false;
-        }
-        if (fieldT[i][j] !== c) {
-          acceptT = false;
-        }
+        if (!acceptLine && !acceptLineT) break;
+        if (field[i][j] !== c) acceptLine = false;
+        if (fieldT[i][j] !== c) acceptLineT = false;
       }
-      if (accept || acceptT) {
-        return true;
-      }
+      if (acceptLine || acceptLineT) return true;
     }
     return acceptDiag || acceptDiagT;
   };
-  if (isWin('x')) return 'x';
-  if (isWin('o')) return 'o';
-  return 'draw';
+  let result = 0;
+  if (isWin('x')) result++;
+  if (isWin('o')) result--;
+  return result === 0 ? 'draw' : result === 1 ? 'x' : 'o';
 }
 
 module.exports = {
