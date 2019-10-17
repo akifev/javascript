@@ -116,10 +116,10 @@ function matrixProblem(matrix) {
   }
   if (checkMatrix) {
     const matrixT = [];
-    for (let j = 0; j < m; j++) {
+    for (let i = 0; i < n; i++) {
       const line = [];
-      for (let i = 0; i < n; i++) {
-        line.push(matrix[i][j]);
+      for (let j = 0; j < m; j++) {
+        line.push(matrix[j][i]);
       }
       matrixT.push(line);
     }
@@ -181,8 +181,16 @@ function smilesProblem(text) {
  */
 function ticTacToeProblem(field) {
   const FIELD_SIZE = 3;
+  const fieldT = [];
+  for (let i = 0; i < FIELD_SIZE; i++) {
+    const line = [];
+    for (let j = 0; j < FIELD_SIZE; j++) {
+      line.push(field[j][FIELD_SIZE - i - 1]);
+    }
+    fieldT.push(line);
+  }
+  console.log(fieldT);
   const isWin = function(c) {
-    const fieldT = matrixProblem(field);
     let acceptDiag = true;
     let acceptDiagT = true;
     for (let i = 0; i < FIELD_SIZE; i++) {
