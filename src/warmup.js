@@ -109,7 +109,7 @@ function matrixProblem(matrix) {
   const m = matrix[0].length;
   let checkMatrix = true;
   for (let i = 0; i < n; i++) {
-    if (Array.isArray(matrix[i]) && matrix[i].length !== m) {
+    if (!Array.isArray(matrix[i]) || matrix[i].length !== m) {
       checkMatrix = false;
       break;
     }
@@ -117,9 +117,9 @@ function matrixProblem(matrix) {
   if (checkMatrix) {
     const matrixT = [];
     for (let j = 0; j < m; j++) {
-      const line = [n];
+      const line = [];
       for (let i = 0; i < n; i++) {
-        line[i] = matrix[i][j];
+        line.push(matrix[i][j]);
       }
       matrixT.push(line);
     }
