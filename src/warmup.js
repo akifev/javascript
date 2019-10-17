@@ -1,5 +1,13 @@
 'use strict';
 
+function isNumber(a) {
+  return typeof a === 'number';
+}
+
+function isString(a) {
+  return typeof a === 'string';
+}
+
 /**
  * Складывает два целых числа
  * @param {Number} a Первое целое
@@ -8,7 +16,13 @@
  * @returns {Number} Сумма аргументов
  */
 function abProblem(a, b) {
-  // Ваше решение
+  if (!isNumber(a) || !isNumber(b)) {
+    throw new TypeError("Expected types 'Number'");
+  }
+  if (!Number.isInteger(a) || !Number.isInteger(b)) {
+    throw new RangeError("Expected types 'Integer'");
+  }
+  return a + b;
 }
 
 /**
@@ -19,7 +33,16 @@ function abProblem(a, b) {
  * @returns {Number} Век, полученный из года
  */
 function centuryByYearProblem(year) {
-  // Ваше решение
+  if (!isNumber(year)) {
+    throw new TypeError("Expected type 'Number'");
+  }
+  if (!Number.isInteger(year)) {
+    throw new RangeError("Expected type 'Integer'");
+  }
+  if (year < 0) {
+    throw new RangeError('Expected not-negative year');
+  }
+  return Math.ceil(year / 100);
 }
 
 /**
@@ -30,7 +53,16 @@ function centuryByYearProblem(year) {
  * @returns {String} Цвет в формате RGB, например, '(255, 255, 255)'
  */
 function colorsProblem(hexColor) {
-  // Ваше решение
+  if (!isString(hexColor)) {
+    throw new TypeError("Expected type 'string'");
+  }
+  if (!/^#([A-F]|[a-f]|[0-9]){6}$/.test(hexColor)) {
+    throw new RangeError("Expected 'HEX' string");
+  }
+  const red = parseInt(hexColor.substr(1, 2), 16);
+  const green = parseInt(hexColor.substr(3, 2), 16);
+  const blue = parseInt(hexColor.substr(5, 2), 16);
+  return `(${red}, ${green}, ${blue})`;
 }
 
 /**
@@ -41,7 +73,26 @@ function colorsProblem(hexColor) {
  * @returns {Number} Число Фибоначчи, находящееся на n-ой позиции
  */
 function fibonacciProblem(n) {
-  // Ваше решение
+  if (!isNumber(n)) {
+    throw new TypeError("Expected type 'number'");
+  }
+  if (!Number.isInteger(n)) {
+    throw new RangeError("Expected type 'Integer'");
+  }
+  if (n <= 0) {
+    throw new RangeError("Expected positive 'n'");
+  }
+  if (n === 1 || n === 2) {
+    return 1;
+  }
+  let a = 1;
+  let b = 1;
+  for (let i = 3; i <= n; i++) {
+    const c = b;
+    b = a + b;
+    a = c;
+  }
+  return b;
 }
 
 /**
@@ -51,7 +102,31 @@ function fibonacciProblem(n) {
  * @returns {(Any[])[]} Транспонированная матрица размера NxM
  */
 function matrixProblem(matrix) {
-  // Ваше решение
+  if (!Array.isArray(matrix) || matrix.length === 0 || !Array.isArray(matrix[0])) {
+    throw TypeError('Expected NxM matrix');
+  }
+  const n = matrix.length;
+  const m = matrix[0].length;
+  let checkMatrix = true;
+  for (let i = 0; i < n; i++) {
+    if (matrix[i].length !== m) {
+      checkMatrix = false;
+      break;
+    }
+  }
+  if (checkMatrix) {
+    const matrixT = [];
+    for (let j = 0; j < m; j++) {
+      const line = [n];
+      for (let i = 0; i < n; i++) {
+        line[i] = matrix[i][j];
+      }
+      matrixT.push(line);
+    }
+    return matrixT;
+  } else {
+    throw new TypeError('Expected NxM matrix');
+  }
 }
 
 /**
@@ -63,7 +138,16 @@ function matrixProblem(matrix) {
  * @returns {String} Число n в системе счисления targetNs
  */
 function numberSystemProblem(n, targetNs) {
-  // Ваше решение
+  if (!isNumber(n) || !isNumber(targetNs)) {
+    throw new TypeError("Excpected types 'number'");
+  }
+  if (!Number.isInteger(targetNs)) {
+    throw new TypeError("Excpected target base type 'Integer'");
+  }
+  if (targetNs < 2 || targetNs > 36) {
+    throw new RangeError('Excpected base in range [2, 36]');
+  }
+  return n.toString(targetNs);
 }
 
 /**
@@ -72,7 +156,7 @@ function numberSystemProblem(n, targetNs) {
  * @returns {Boolean} Если соответствует формату, то true, а иначе false
  */
 function phoneProblem(phoneNumber) {
-  // Ваше решение
+  return /^8-800-(([0-9]){3})-(([0-9]){2})-(([0-9]){2})$/.test(phoneNumber);
 }
 
 /**
@@ -82,7 +166,10 @@ function phoneProblem(phoneNumber) {
  * @returns {Number} Количество улыбающихся смайликов в строке
  */
 function smilesProblem(text) {
-  // Ваше решение
+  if (typeof text !== 'string') {
+    throw new TypeError("Expected type 'String'");
+  }
+  return text.split(/:-\)/).length + text.split(/\(-:/).length - 2;
 }
 
 /**
@@ -92,7 +179,36 @@ function smilesProblem(text) {
  * @returns {'x' | 'o' | 'draw'} Результат игры
  */
 function ticTacToeProblem(field) {
-  // Ваше решение
+  const FIELD_SIZE = 3;
+  const isWin = function(c) {
+    const fieldT = matrixProblem(field);
+    let acceptDiag = true;
+    let acceptDiagT = true;
+    for (let i = 0; i < FIELD_SIZE; i++) {
+      if (field[i][i] !== c) acceptDiag = false;
+      if (fieldT[i][i] !== c) acceptDiagT = false;
+      let accept = true;
+      let acceptT = true;
+      for (let j = 0; j < FIELD_SIZE; j++) {
+        if (!accept && !acceptT) {
+          break;
+        }
+        if (field[i][j] !== c) {
+          accept = false;
+        }
+        if (fieldT[i][j] !== c) {
+          acceptT = false;
+        }
+      }
+      if (accept || acceptT) {
+        return true;
+      }
+    }
+    return acceptDiag || acceptDiagT;
+  };
+  if (isWin('x')) return 'x';
+  if (isWin('o')) return 'o';
+  return 'draw';
 }
 
 module.exports = {
