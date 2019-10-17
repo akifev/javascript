@@ -102,19 +102,14 @@ function fibonacciProblem(n) {
  * @returns {(Any[])[]} Транспонированная матрица размера NxM
  */
 function matrixProblem(matrix) {
-  if (
-    !Array.isArray(matrix) ||
-    matrix.length === 0 ||
-    !Array.isArray(matrix[0]) ||
-    matrix[0].length === 0
-  ) {
+  if (!Array.isArray(matrix) || matrix.length === 0 || !Array.isArray(matrix[0])) {
     throw TypeError('Expected NxM matrix');
   }
   const n = matrix.length;
   const m = matrix[0].length;
   let checkMatrix = true;
   for (let i = 0; i < n; i++) {
-    if (matrix[i].length !== m) {
+    if (Array.isArray(matrix[i]) && matrix[i].length !== m) {
       checkMatrix = false;
       break;
     }
