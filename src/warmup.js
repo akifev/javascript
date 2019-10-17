@@ -56,7 +56,7 @@ function colorsProblem(hexColor) {
   if (!isString(hexColor)) {
     throw new TypeError("Expected type 'string'");
   }
-  if (!/^#([A-F]|[a-f]|[0-9]){6}$/.test(hexColor)) {
+  if (!/^#([A-F]|\d){6}$/i.test(hexColor)) {
     throw new RangeError("Expected 'HEX' string");
   }
   const red = parseInt(hexColor.substr(1, 2), 16);
@@ -102,7 +102,12 @@ function fibonacciProblem(n) {
  * @returns {(Any[])[]} Транспонированная матрица размера NxM
  */
 function matrixProblem(matrix) {
-  if (!Array.isArray(matrix) || matrix.length === 0 || !Array.isArray(matrix[0])) {
+  if (
+    !Array.isArray(matrix) ||
+    matrix.length === 0 ||
+    !Array.isArray(matrix[0]) ||
+    matrix[0].length === 0
+  ) {
     throw TypeError('Expected NxM matrix');
   }
   const n = matrix.length;
@@ -145,7 +150,7 @@ function numberSystemProblem(n, targetNs) {
     throw new TypeError("Excpected target base type 'Integer'");
   }
   if (targetNs < 2 || targetNs > 36) {
-    throw new RangeError('Excpected base in range [2, 36]');
+    throw new RangeError('Excpected target base in range [2, 36]');
   }
   return n.toString(targetNs);
 }
@@ -156,7 +161,7 @@ function numberSystemProblem(n, targetNs) {
  * @returns {Boolean} Если соответствует формату, то true, а иначе false
  */
 function phoneProblem(phoneNumber) {
-  return /^8-800-(([0-9]){3})-(([0-9]){2})-(([0-9]){2})$/.test(phoneNumber);
+  return /^8-800-\d{3}-\d{2}-\d{2}$/.test(phoneNumber);
 }
 
 /**
@@ -169,7 +174,8 @@ function smilesProblem(text) {
   if (typeof text !== 'string') {
     throw new TypeError("Expected type 'String'");
   }
-  return text.split(/:-\)/).length + text.split(/\(-:/).length - 2;
+  const mathed = text.match(/(:-\))|(\(-:)/g);
+  return mathed !== null ? mathed.length : 0;
 }
 
 /**
