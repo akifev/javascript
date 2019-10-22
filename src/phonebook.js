@@ -24,7 +24,7 @@ function isValidPerson(phone, name, email) {
     return false;
   }
 
-  return !(email !== undefined && !isString(email));
+  return email === undefined || isString(email);
 }
 
 /**
