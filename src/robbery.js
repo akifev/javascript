@@ -123,25 +123,24 @@ function getAppropriateMoment(schedule, duration, workingHours) {
     return getKey(segment.from) < getKey(window.to) && getKey(segment.to) > getKey(window.from);
   }
 
-  function getWindow(time) {
-    let start = { weekday: 1, hour: 0, minutes: 0 };
-    let end = addDuration(start, time);
+  function getWindow(time, start) {
+    let beg = start;
+    let end = addDuration(beg, time);
     for (const segment of Object.values(segments)) {
       if (getKey(segment.from) > getKey(end)) {
         break;
       }
 
-      if (hasIntersection({ from: start, to: end }, segment)) {
-        start = segment.to;
-        end = addDuration(start, time);
+      if (hasIntersection({ from: beg, to: end }, segment)) {
+        beg = segment.to;
+        end = addDuration(beg, time);
       }
     }
 
-    return { from: start, to: end };
+    return { from: beg, to: end };
   }
 
-  const window = getWindow(duration);
-  const safeWindow = getWindow(duration + 30);
+  let window = getWindow(duration, { weekday: 1, hour: 0, minutes: 0 });
 
   return {
     /**
@@ -149,7 +148,7 @@ function getAppropriateMoment(schedule, duration, workingHours) {
      * @returns {boolean}
      */
     exists() {
-      return window.to.weekday < 8;
+      return window.to.weekday < 4;
     },
 
     /**
@@ -184,8 +183,14 @@ function getAppropriateMoment(schedule, duration, workingHours) {
       if (!this.exists()) {
         return false;
       }
+      const nextWindow = getWindow(duration, addDuration(window.from, 30));
+      if (nextWindow.to.weekday >= 4) {
+        return false;
+      }
 
-      return getKey(window.from) === getKey(safeWindow.from);
+      window = nextWindow;
+
+      return true;
     }
   };
 }
