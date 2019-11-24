@@ -6,6 +6,27 @@
  */
 const isExtraTaskSolved = true;
 
+const days = {
+  ПН: 1,
+  ВТ: 2,
+  СР: 3,
+  ЧТ: 4,
+  ПТ: 5,
+  СБ: 6,
+  ВС: 7
+};
+Object.freeze(days);
+const nums = {
+  1: 'ПН',
+  2: 'ВТ',
+  3: 'СР',
+  4: 'ЧТ',
+  5: 'ПТ',
+  6: 'СБ',
+  7: 'ВС'
+};
+Object.freeze(nums);
+
 /**
  * @param {Object} schedule Расписание Банды
  * @param {number} duration Время на ограбление в минутах
@@ -15,31 +36,16 @@ const isExtraTaskSolved = true;
  * @returns {Object}
  */
 function getAppropriateMoment(schedule, duration, workingHours) {
-  const timezone = workingHours.from[6];
+  const timezoneRegexp = new RegExp('[0-9]+$');
+  const timezone = Number(timezoneRegexp.exec(workingHours.from)[0]);
   const segments = [];
-  const days = {};
-  days['ПН'] = 1;
-  days['ВТ'] = 2;
-  days['СР'] = 3;
-  days['ЧТ'] = 4;
-  days['ПТ'] = 5;
-  days['СБ'] = 6;
-  days['ВС'] = 7;
-  const nums = {};
-  nums[1] = 'ПН';
-  nums[2] = 'ВТ';
-  nums[3] = 'СР';
-  nums[4] = 'ЧТ';
-  nums[5] = 'ПТ';
-  nums[6] = 'СБ';
-  nums[7] = 'ВС';
 
   function addSegments(robberSchedule) {
     function correctTimezone(date) {
       let weekday = days[date.substr(0, 2)];
       let hour = Number(date.substr(3, 2));
       const minutes = Number(date.substr(6, 2));
-      const robberTimezone = Number(date.substr(9));
+      const robberTimezone = Number(timezoneRegexp.exec(date)[0]);
 
       hour += timezone - robberTimezone;
 
@@ -62,12 +68,13 @@ function getAppropriateMoment(schedule, duration, workingHours) {
       segments.push({ from: correctTimezone(from), to: correctTimezone(to) });
     }
   }
-  addSegments(schedule.Danny);
-  addSegments(schedule.Rusty);
-  addSegments(schedule.Linus);
+
+  for (const robberSchedule of Object.values(schedule)) {
+    addSegments(robberSchedule);
+  }
 
   function addBankSegments() {
-    for (let weekday = 1; weekday < 8; weekday++) {
+    for (let weekday = 1; weekday <= 7; weekday++) {
       const hourFrom = Number(workingHours.from.substr(0, 2));
       const minutesFrom = Number(workingHours.from.substr(3, 2));
 
@@ -92,11 +99,7 @@ function getAppropriateMoment(schedule, duration, workingHours) {
     return date.weekday * 10000 + date.hour * 100 + date.minutes;
   }
 
-  segments.sort(function(a, b) {
-    return getKey(a.from) - getKey(b.from);
-  });
-
-  //console.log(segments);
+  segments.sort((a, b) => getKey(a.from) - getKey(b.from));
 
   function addDuration(date, time) {
     const hourDuration = parseInt(time / 60);
@@ -119,28 +122,30 @@ function getAppropriateMoment(schedule, duration, workingHours) {
     return { weekday: weekday, hour: hour, minutes: minutes };
   }
 
-  function hasIntersection(window, segment) {
-    return getKey(segment.from) < getKey(window.to) && getKey(segment.to) > getKey(window.from);
+  function hasIntersection(robberyTime, segment) {
+    return (
+      getKey(segment.from) < getKey(robberyTime.to) && getKey(segment.to) > getKey(robberyTime.from)
+    );
   }
 
-  function getWindow(time, start) {
-    let beg = start;
-    let end = addDuration(beg, time);
+  function getRobberyTime(time, start) {
+    let from = start;
+    let to = addDuration(from, time);
     for (const segment of Object.values(segments)) {
-      if (getKey(segment.from) > getKey(end)) {
+      if (getKey(segment.from) > getKey(to)) {
         break;
       }
 
-      if (hasIntersection({ from: beg, to: end }, segment)) {
-        beg = segment.to;
-        end = addDuration(beg, time);
+      if (hasIntersection({ from, to }, segment)) {
+        from = segment.to;
+        to = addDuration(from, time);
       }
     }
 
-    return { from: beg, to: end };
+    return { from, to };
   }
 
-  let window = getWindow(duration, { weekday: 1, hour: 0, minutes: 0 });
+  let robberyTime = getRobberyTime(duration, { weekday: 1, hour: 0, minutes: 0 });
 
   return {
     /**
@@ -148,7 +153,7 @@ function getAppropriateMoment(schedule, duration, workingHours) {
      * @returns {boolean}
      */
     exists() {
-      return window.to.weekday < 4;
+      return robberyTime.to.weekday < 4;
     },
 
     /**
@@ -169,9 +174,9 @@ function getAppropriateMoment(schedule, duration, workingHours) {
       }
 
       return template
-        .replace('%DD', nums[window.from.weekday])
-        .replace('%HH', (window.from.hour < 10 ? '0' : '') + window.from.hour)
-        .replace('%MM', (window.from.minutes < 10 ? '0' : '') + window.from.minutes);
+        .replace('%DD', nums[robberyTime.from.weekday])
+        .replace('%HH', robberyTime.from.hour.toString().padStart(2, '0'))
+        .replace('%MM', robberyTime.from.minutes.toString().padStart(2, '0'));
     },
 
     /**
@@ -183,12 +188,16 @@ function getAppropriateMoment(schedule, duration, workingHours) {
       if (!this.exists()) {
         return false;
       }
-      const nextWindow = getWindow(duration, addDuration(window.from, 30));
-      if (nextWindow.to.weekday >= 4) {
+      const PREPARATION_TIME = 30;
+      const nextRobberyTime = getRobberyTime(
+        duration,
+        addDuration(robberyTime.from, PREPARATION_TIME)
+      );
+      if (nextRobberyTime.to.weekday >= 4) {
         return false;
       }
 
-      window = nextWindow;
+      robberyTime = nextRobberyTime;
 
       return true;
     }
