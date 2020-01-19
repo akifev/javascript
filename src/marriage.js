@@ -1,12 +1,32 @@
 'use strict';
 
-/**
- * @typedef {Object} Friend
- * @property {string} name Имя
- * @property {'male' | 'female'} gender Пол
- * @property {boolean} best Лучший ли друг?
- * @property {string[]} friends Список имён друзей
- */
+function applyMarriageFilter(friends, filter, maxLevel = Infinity) {
+  const bestFriends = friends.filter(friend => friend.best);
+  const queue = [bestFriends];
+  const invited = new Set();
+  let level = 0;
+  while (level < maxLevel && queue.length > 0) {
+    const guests = queue.shift();
+    const following = [];
+    guests
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .forEach(function(person) {
+        if (!invited.has(person)) {
+          invited.add(person);
+
+          person.friends.forEach(name => following.push(friends.find(p => p.name === name)));
+        }
+      });
+
+    if (following.length > 0) {
+      queue.push(following);
+    }
+
+    ++level;
+  }
+
+  return [...invited].filter(filter.isSuitable);
+}
 
 /**
  * Итератор по друзьям
@@ -15,7 +35,16 @@
  * @param {Filter} filter Фильтр друзей
  */
 function Iterator(friends, filter) {
-  console.info(friends, filter);
+  if (!(filter instanceof Filter)) {
+    throw new TypeError('filter must be instance of Filter');
+  }
+
+  this.set = applyMarriageFilter(friends, filter);
+
+  this.position = 0;
+
+  this.done = () => this.position === this.set.length;
+  this.next = () => (this.done() ? null : this.set[this.position++]);
 }
 
 /**
@@ -27,15 +56,17 @@ function Iterator(friends, filter) {
  * @param {Number} maxLevel Максимальный круг друзей
  */
 function LimitedIterator(friends, filter, maxLevel) {
-  console.info(friends, filter, maxLevel);
+  Iterator.call(this, friends, filter);
+  this.set = applyMarriageFilter(friends, filter, maxLevel);
 }
+LimitedIterator.prototype = Object.create(Iterator.prototype);
 
 /**
  * Фильтр друзей
  * @constructor
  */
 function Filter() {
-  console.info('Filter');
+  this.isSuitable = () => true;
 }
 
 /**
@@ -44,8 +75,9 @@ function Filter() {
  * @constructor
  */
 function MaleFilter() {
-  console.info('MaleFilter');
+  this.isSuitable = friend => friend.gender === 'male';
 }
+MaleFilter.prototype = Object.create(Filter.prototype);
 
 /**
  * Фильтр друзей-девушек
@@ -53,13 +85,14 @@ function MaleFilter() {
  * @constructor
  */
 function FemaleFilter() {
-  console.info('FemaleFilter');
+  this.isSuitable = friend => friend.gender === 'female';
 }
+FemaleFilter.prototype = Object.create(Filter.prototype);
 
 module.exports = {
   Iterator,
-  LimitedIterator,
   Filter,
+  LimitedIterator,
   MaleFilter,
   FemaleFilter
 };
